@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบตารางเรียนภาควิชา (Multi-Year & Multi-Group)</title>
+  
+  <!-- Font Prompt อ่านง่าย กึ่งทางการ -->
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- PapaParse Library สำหรับดึงและแปลงไฟล์ CSV -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  
+  <style>
+    :root {
+      --primary-navy: #1e3a8a;
+      --navy-light: #eff6ff;
+      --accent-blue: #0284c7;
+      --bg-main: #f8fafc;
+      --text-main: #0f172a;
+      --text-muted: #334155;
+      --border-color: #cbd5e1;
+    }
+
+    * { box-sizing: border-box; font-family: 'Prompt', sans-serif; }
+    body { background-color: var(--bg-main); color: var(--text-main); margin: 0; padding: 24px; line-height: 1.6; }
+    .container { max-width: 1050px; margin: 0 auto; }
+
+    header { 
+      background: var(--primary-navy); 
+      color: #ffffff; 
+      padding: 24px; 
+      border-radius: 8px; 
+      margin-bottom: 24px; 
+    }
+    h1 { margin: 0 0 8px 0; font-size: 1.6rem; font-weight: 600; }
+
+    /* Filter Controls Panel */
+    .filter-panel {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .filter-group { display: flex; flex-direction: column; gap: 6px; }
+    label { font-size: 0.9rem; font-weight: 600; color: var(--primary-navy); }
+    select, input {
+      padding: 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    .summary { 
+      font-size: 1rem; 
+      color: var(--text-muted); 
+      margin-bottom: 20px; 
+      display: flex; 
+      justify-content: space-between; 
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 10px;
+      font-weight: 500;
+    }
+
+    .timeline { display: flex; flex-direction: column; gap: 12px; }
+    
+    .week-header {
+      background: var(--primary-navy);
+      color: #ffffff;
+      font-size: 1.1rem;
+      font-weight: 600;
+      padding: 10px 16px;
+      border-radius: 6px;
+      margin-top: 16px;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 16px 20px;
+      display: grid;
+      grid-template-columns: 160px 1fr auto;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .time-col { font-weight: 700; color: var(--primary-navy); }
+    .badge { font-size: 0.85rem; font-weight: 600; padding: 4px 10px; border-radius: 4px; background: #f1f5f9; }
+    .badge-exam { color: #991b1b; background: #fef2f2; border: 1px solid #991b1b; }
+    .badge-group { color: #0284c7; background: #e0f2fe; border: 1px solid #0284c7; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>ระบบตารางกิจกรรมการเรียนการสอน (มัลติชั้นปี & กลุ่มย่อย)</h1>
+    <p style="margin:0; opacity:0.9;">ดึงข้อมูลจากไฟล์ CSV อัตโนมัติ — ซิงก์ตรงจาก Google Sheets</p>
+  </header>
+
+  <!-- แถบควบคุมการกรอง -->
+  <div class="filter-panel">
+    <div class="filter-group">
+      <label for="yearFilter">1. เลือกชั้นปี</label>
+      <select id="yearFilter">
+        <option value="ปี 3">ปี 3</option>
+        <option value="ปี 4">ปี 4</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="groupFilter">2. กลุ่มย่อยของฉัน</label>
+      <select id="groupFilter">
+        <option value="all">-- แสดงทุกกลุ่ม (ภาพรวม) --</option>
+        <option value="1">กลุ่ม 1</option>
+        <option value="2">กลุ่ม 2</option>
+        <option value="3">กลุ่ม 3</option>
+        <option value="4">กลุ่ม 4</option>
+        <option value="5">กลุ่ม 5</option>
+        <option value="6">กลุ่ม 6</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="lecturerFilter">3. กรองตามอาจารย์</label>
+      <select id="lecturerFilter">
+        <option value="">-- อาจารย์ทั้งหมด --</option>
+        <option value="ณัฐวุฒิ">อ. ณัฐวุฒิ</option>
+        <option value="สัมฤทธิ์">อ. สัมฤทธิ์</option>
+        <option value="ภูษิต">อ. ภูษิต</option>
+        <option value="เริงฤดี">อ. เริงฤดี</option>
+        <option value="ฉัตรชัย">อ. ฉัตรชัย</option>
+        <option value="วริษา">อ. วริษา</option>
+        <option value="จักรกฤษณ์">อ. จักรกฤษณ์</option>
+        <option value="สวนีย์">อ. สวนีย์</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="searchInput">4. ค้นหาคำ/วิชา</label>
+      <input type="text" id="searchInput" placeholder="พิมพ์ชื่อวิชา หรือหัวข้อ...">
+    </div>
+  </div>
+
+  <div class="summary">
+    <span id="resultCount">กำลังโหลดข้อมูลจาก CSV...</span>
+  </div>
+
+  <div class="timeline" id="scheduleContainer"></div>
+</div>
+
+<script>
+// *** ใส่ URL ลิงก์ CSV จาก Google Sheets (Publish to Web) ของคุณตรงนี้ ***
+const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTVCp6_8XOpTvWsEDQIKVjl-0VNK5gwlXXbIbtrrOlb80CYjon9cTJf5-W-al76r7bLG5gP21NInkz7/pub?gid=1642042382&single=true&output=csv'; 
+
+let allScheduleData = [];
+
+// ดึงข้อมูล CSV ผ่าน PapaParse
+function loadCSVData() {
+  Papa.parse(csvUrl, {
+    download: true,
+    header: true,
+    skipEmptyLines: true,
+    complete: function(results) {
+      allScheduleData = results.data;
+      renderSchedule(); // เรนเดอร์หน้าเว็บเมื่อโหลดข้อมูลเสร็จ
+    },
+    error: function(err) {
+      document.getElementById('resultCount').textContent = 'เกิดข้อผิดพลาดในการโหลดข้อมูล CSV';
+    }
+  });
+}
+
+function renderSchedule() {
+  const selectedYear = document.getElementById('yearFilter').value;
+  const selectedGroup = document.getElementById('groupFilter').value;
+  const selectedLecturer = document.getElementById('lecturerFilter').value;
+  const query = document.getElementById('searchInput').value.toLowerCase().trim();
+
+  const container = document.getElementById('scheduleContainer');
+  container.innerHTML = "";
+  let count = 0;
+  let lastWeek = "";
+
+  allScheduleData.forEach(item => {
+    // 1. กรองตามชั้นปี
+    const matchYear = !item.year || item.year === selectedYear;
+    
+    // 2. กรองตามกลุ่มนักศึกษา (ถ้าเป็น 'all' แสดงทุกอัน / ถ้าเลือกกลุ่ม แสดงเฉพาะ 'all' และ 'เลขกลุ่มตรงกัน')
+    const matchGroup = (selectedGroup === 'all') || (item.groupId === 'all' || item.groupId === selectedGroup);
+
+    // 3. กรองตามอาจารย์
+    const matchLecturer = !selectedLecturer || (item.lecturer && item.lecturer.includes(selectedLecturer));
+
+    // 4. กรองตามคำค้นหา
+    const matchSearch = !query || 
+                        (item.topic && item.topic.toLowerCase().includes(query)) ||
+                        (item.lecturer && item.lecturer.toLowerCase().includes(query));
+
+    if (matchYear && matchGroup && matchLecturer && matchSearch) {
+      count++;
+
+      // แบ่งสัปดาห์
+      if (item.week !== lastWeek) {
+        lastWeek = item.week;
+        const wHeader = document.createElement("div");
+        wHeader.className = "week-header";
+        wHeader.textContent = `📌 ${item.week} (${item.date || ''})`;
+        container.appendChild(wHeader);
+      }
+
+      // สร้างการ์ดแสดงผล
+      const card = document.createElement("div");
+      card.className = "card";
+      
+      let badgeHtml = `<span class="badge">[ ${item.format || 'Onsite'} ]</span>`;
+      if (item.groupId && item.groupId !== 'all') {
+        badgeHtml = `<span class="badge badge-group">[ กลุ่มย่อย ${item.groupId} ]</span>`;
+      } else if (item.format === 'Exam') {
+        badgeHtml = `<span class="badge badge-exam">[ สอบ ]</span>`;
+      }
+
+      card.innerHTML = `
+        <div class="time-col">⏱️ ${item.time || ''}</div>
+        <div>
+          <h3 style="margin:0 0 4px 0; font-size:1rem;">${item.topic || ''}</h3>
+          <div style="font-size:0.88rem; color:#475569;">ผู้สอน: ${item.lecturer || '-'}</div>
+        </div>
+        <div>${badgeHtml}</div>
+      `;
+      container.appendChild(card);
+    }
+  });
+
+  document.getElementById('resultCount').textContent = `แสดงผลทั้งสิ้น ${count} รายการ (${selectedYear})`;
+}
+
+// Event Listeners สำหรับการกรอง
+document.getElementById('yearFilter').addEventListener('change', renderSchedule);
+document.getElementById('groupFilter').addEventListener('change', renderSchedule);
+document.getElementById('lecturerFilter').addEventListener('change', renderSchedule);
+document.getElementById('searchInput').addEventListener('input', renderSchedule);
+
+// เริ่มโหลดข้อมูลเมื่อเปิดหน้าเว็บ
+loadCSVData();
+</script>
+</body>
+</html>
