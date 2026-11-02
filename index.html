@@ -250,6 +250,84 @@ document.getElementById('searchInput').addEventListener('input', renderSchedule)
 
 // เริ่มโหลดข้อมูลเมื่อเปิดหน้าเว็บ
 loadCSVData();
+<!-- โครงสร้างไฟล์ HTML ของคุณ -->
+
+<script>
+  // ... รายชื่ออาจารย์ / ข้อมูลตารางเรียน (scheduleData หรือ allScheduleData) ...
+
+  // -------------------------------------------------------------
+  // 📍 วางทับ / แทนที่ฟังก์ชัน renderSchedule() ตรงตำแหน่งนี้
+  // -------------------------------------------------------------
+  function renderSchedule() {
+    const query = searchInput.value.toLowerCase().trim();
+    const selectedLecturer = lecturerSelect.value;
+    const selectedWeek = weekSelect.value;
+    const selectedYear = document.getElementById('yearFilter') ? document.getElementById('yearFilter').value : 'ปี 3';
+    const selectedGroup = document.getElementById('groupFilter') ? document.getElementById('groupFilter').value : 'all';
+
+    container.innerHTML = "";
+    let lastWeek = "";
+    let lastDate = "";
+    let count = 0;
+
+    allScheduleData.forEach(item => {
+      // ตรวจสอบเงื่อนไขการกรองข้อมูล
+      const matchYear = !item.year || item.year === selectedYear;
+      const matchGroup = (selectedGroup === 'all') || (item.groupId === 'all' || item.groupId === selectedGroup);
+      const matchLecturer = !selectedLecturer || (item.lecturer && item.lecturer.includes(selectedLecturer));
+      const matchWeek = !selectedWeek || item.week === selectedWeek;
+      const matchSearch = !query || 
+                          (item.topic && item.topic.toLowerCase().includes(query)) ||
+                          (item.lecturer && item.lecturer.toLowerCase().includes(query));
+
+      if (matchYear && matchGroup && matchLecturer && matchWeek && matchSearch) {
+        count++;
+
+        // 1. เช็คเปลี่ยนสัปดาห์ -> ขึ้นแถบสัปดาห์สีน้ำเงินเข้ม
+        if (item.week !== lastWeek) {
+          lastWeek = item.week;
+          const wHeader = document.createElement("div");
+          wHeader.className = "week-header";
+          wHeader.textContent = `📌 ${item.week}`;
+          container.appendChild(wHeader);
+        }
+
+        // 2. เช็คเปลี่ยนวัน -> ขึ้นแถบหัววัน (Day Header) แยกแต่ละวัน
+        if (item.date !== lastDate) {
+          lastDate = item.date;
+          const dHeader = document.createElement("div");
+          dHeader.className = "day-header";
+          dHeader.textContent = item.date;
+          container.appendChild(dHeader);
+        }
+
+        // 3. สร้างการ์ดแสดงกิจกรรม
+        const card = document.createElement("div");
+        card.className = "card";
+        
+        let badgeHtml = `<span class="badge">[ ${item.format || 'Onsite'} ]</span>`;
+        if (item.groupId && item.groupId !== 'all') {
+          badgeHtml = `<span class="badge badge-group">[ กลุ่มย่อย ${item.groupId} ]</span>`;
+        } else if (item.format === 'Exam') {
+          badgeHtml = `<span class="badge badge-exam">[ สอบ ]</span>`;
+        }
+
+        card.innerHTML = `
+          <div class="time-col">⏱️ ${item.time || ''}</div>
+          <div class="topic-col">
+            <h3>${item.topic || ''}</h3>
+            <div class="lecturer-name">👤 ผู้สอน: ${item.lecturer || '-'}</div>
+          </div>
+          <div>${badgeHtml}</div>
+        `;
+        container.appendChild(card);
+      }
+    });
+
+    if (resultCount) {
+      resultCount.textContent = `แสดงผลทั้งสิ้น ${count} รายการ`;
+    }
+  }
+
+  // ... Event Listeners เช่น searchInput.addEventListener("input", renderSchedule); ...
 </script>
-</body>
-</html>
