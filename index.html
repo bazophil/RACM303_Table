@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ระบบตารางเรียนภาควิชา (Multi-Year & Multi-Group)</title>
   
-  <!-- Font Prompt อ่านง่าย กึ่งทางการ -->
+  <!-- Font Prompt อ่านง่าย กึ่งทางการ ตัวใหญ่ชัดเจน -->
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   
   <!-- PapaParse Library สำหรับดึงและแปลงไฟล์ CSV -->
@@ -13,27 +13,57 @@
   
   <style>
     :root {
-      --primary-navy: #1e3a8a;
-      --navy-light: #eff6ff;
-      --accent-blue: #0284c7;
-      --bg-main: #f8fafc;
-      --text-main: #0f172a;
-      --text-muted: #334155;
-      --border-color: #cbd5e1;
+      --primary-navy: #1e3a8a;      /* สีหลัก Navy Blue */
+      --navy-dark: #0f172a;
+      --accent-blue: #0284c7;       /* สีเน้นความโดดเด่น */
+      --bg-main: #f8fafc;           /* สีพื้นหลังหน้าเว็บ */
+      --text-main: #0f172a;         /* สีตัวหนังสือหลัก คมชัด */
+      --text-muted: #334155;        /* สีตัวหนังสือรอง */
+      --border-color: #cbd5e1;      /* สีเส้นขอบ */
     }
 
-    * { box-sizing: border-box; font-family: 'Prompt', sans-serif; }
-    body { background-color: var(--bg-main); color: var(--text-main); margin: 0; padding: 24px; line-height: 1.6; }
-    .container { max-width: 1050px; margin: 0 auto; }
+    * { 
+      box-sizing: border-box; 
+      font-family: 'Prompt', sans-serif; 
+    }
 
+    body { 
+      background-color: var(--bg-main); 
+      color: var(--text-main); 
+      margin: 0; 
+      padding: 24px; 
+      line-height: 1.6;
+      font-size: 16px;
+    }
+
+    .container { 
+      max-width: 1050px; 
+      margin: 0 auto; 
+    }
+
+    /* Header Section */
     header { 
       background: var(--primary-navy); 
-      color: #ffffff; 
+      color: #ffffff;
       padding: 24px; 
       border-radius: 8px; 
       margin-bottom: 24px; 
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
-    h1 { margin: 0 0 8px 0; font-size: 1.6rem; font-weight: 600; }
+
+    h1 { 
+      margin: 0 0 8px 0; 
+      font-size: 1.6rem; 
+      font-weight: 600; 
+      color: #ffffff;
+    }
+
+    .subtitle { 
+      color: #e2e8f0; 
+      font-size: 1rem; 
+      margin: 0; 
+      font-weight: 300;
+    }
 
     /* Filter Controls Panel */
     .filter-panel {
@@ -45,18 +75,37 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
 
-    .filter-group { display: flex; flex-direction: column; gap: 6px; }
-    label { font-size: 0.9rem; font-weight: 600; color: var(--primary-navy); }
+    .filter-group { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 6px; 
+    }
+
+    label { 
+      font-size: 0.95rem; 
+      font-weight: 600; 
+      color: var(--primary-navy); 
+    }
+
     select, input {
-      padding: 10px;
+      padding: 10px 12px;
       border: 1px solid var(--border-color);
       border-radius: 6px;
       font-size: 0.95rem;
       outline: none;
+      background: #ffffff;
+      color: var(--text-main);
     }
 
+    select:focus, input:focus { 
+      border-color: var(--accent-blue); 
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2);
+    }
+
+    /* Summary Bar */
     .summary { 
       font-size: 1rem; 
       color: var(--text-muted); 
@@ -68,18 +117,41 @@
       font-weight: 500;
     }
 
-    .timeline { display: flex; flex-direction: column; gap: 12px; }
-    
+    /* Timeline Structure */
+    .timeline { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 12px; 
+    }
+
+    /* แถบระดับที่ 1: สัปดาห์ (สีน้ำเงินเข้ม ตัวใหญ่) */
     .week-header {
       background: var(--primary-navy);
       color: #ffffff;
-      font-size: 1.1rem;
-      font-weight: 600;
-      padding: 10px 16px;
+      font-size: 1.25rem;
+      font-weight: 700;
+      padding: 12px 18px;
       border-radius: 6px;
-      margin-top: 16px;
+      margin-top: 24px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
     }
 
+    /* แถบระดับที่ 2: แยกรายวัน (สีเทาฟ้า มีขอบสีฟ้าเน้นด้านซ้าย) */
+    .day-header {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--primary-navy);
+      background: #f1f5f9;
+      border-left: 5px solid var(--accent-blue);
+      border-top: 1px solid var(--border-color);
+      border-right: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
+      padding: 10px 16px;
+      margin-top: 8px;
+      border-radius: 4px;
+    }
+
+    /* Card Item */
     .card {
       background: #ffffff;
       border: 1px solid var(--border-color);
@@ -89,12 +161,55 @@
       grid-template-columns: 160px 1fr auto;
       gap: 20px;
       align-items: center;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
     }
 
-    .time-col { font-weight: 700; color: var(--primary-navy); }
-    .badge { font-size: 0.85rem; font-weight: 600; padding: 4px 10px; border-radius: 4px; background: #f1f5f9; }
-    .badge-exam { color: #991b1b; background: #fef2f2; border: 1px solid #991b1b; }
-    .badge-group { color: #0284c7; background: #e0f2fe; border: 1px solid #0284c7; }
+    .card:hover {
+      border-color: var(--accent-blue);
+      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.15);
+    }
+
+    .time-col { 
+      font-weight: 700; 
+      font-size: 1.05rem; 
+      color: var(--primary-navy); 
+    }
+
+    .topic-col h3 { 
+      margin: 0 0 6px 0; 
+      font-size: 1.1rem; 
+      font-weight: 600; 
+      line-height: 1.4; 
+      color: var(--text-main);
+    }
+
+    .lecturer-name { 
+      color: var(--text-muted); 
+      font-size: 0.95rem; 
+    }
+
+    /* Badges / Formats */
+    .badge {
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 6px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      background: #f1f5f9;
+      white-space: nowrap;
+      color: var(--text-main);
+    }
+
+    .badge-exam { border-color: #991b1b; color: #991b1b; background: #fef2f2; }
+    .badge-group { border-color: #0284c7; color: #0284c7; background: #e0f2fe; }
+    .badge-online { border-color: #c2410c; color: #c2410c; background: #fff7ed; }
+    .badge-field { border-color: #15803d; color: #15803d; background: #f0fdf4; }
+
+    @media (max-width: 768px) {
+      .card { grid-template-columns: 1fr; gap: 10px; }
+      .time-col { font-size: 1rem; }
+      .topic-col h3 { font-size: 1.05rem; }
+    }
   </style>
 </head>
 <body>
@@ -102,7 +217,7 @@
 <div class="container">
   <header>
     <h1>ระบบตารางกิจกรรมการเรียนการสอน (มัลติชั้นปี & กลุ่มย่อย)</h1>
-    <p style="margin:0; opacity:0.9;">ดึงข้อมูลจากไฟล์ CSV อัตโนมัติ — ซิงก์ตรงจาก Google Sheets</p>
+    <p class="subtitle">ดึงข้อมูลจากไฟล์ CSV อัตโนมัติ — ซิงก์ตรงจาก Google Sheets</p>
   </header>
 
   <!-- แถบควบคุมการกรอง -->
@@ -132,32 +247,39 @@
       <label for="lecturerFilter">3. กรองตามอาจารย์</label>
       <select id="lecturerFilter">
         <option value="">-- อาจารย์ทั้งหมด --</option>
-        <option value="ณัฐวุฒิ">อ. ณัฐวุฒิ</option>
-        <option value="สัมฤทธิ์">อ. สัมฤทธิ์</option>
-        <option value="ภูษิต">อ. ภูษิต</option>
-        <option value="เริงฤดี">อ. เริงฤดี</option>
-        <option value="ฉัตรชัย">อ. ฉัตรชัย</option>
-        <option value="วริษา">อ. วริษา</option>
-        <option value="จักรกฤษณ์">อ. จักรกฤษณ์</option>
-        <option value="สวนีย์">อ. สวนีย์</option>
+        <option value="สัมฤทธิ์">ผศ. นพ.สัมฤทธิ์ ศรีธำรงสวัสดิ์</option>
+        <option value="ภูษิต">อ. นพ.ภูษิต ประคองสาย</option>
+        <option value="เริงฤดี">รศ. พญ.เริงฤดี ปธานวนิช</option>
+        <option value="ฉัตรชัย">อ. นพ.ฉัตรชัย อิ่มอารมย์</option>
+        <option value="วริษา">อ. พญ.วริษา สุนทรวินิต</option>
+        <option value="ณัฐวุฒิ">อ. นพ.ณัฐวุฒิ เอี่ยงธนรัตน์</option>
+        <option value="ภรัณยู">นพ.ภรัณยู โอสถธนากร</option>
+        <option value="พีรสิชฌ์">นพ.พีรสิชฌ์ สิทธิรัตน์</option>
+        <option value="จักรกฤษณ์">อ. นพ.จักรกฤษณ์ เอื้อสุนทรวัฒนา</option>
+        <option value="สวนีย์">อ. พญ.สวนีย์ ศรีเจริญธรรม</option>
+        <option value="ปวินท์">อ.ปวินท์</option>
+        <option value="วิชัย">ศ.วิชัย</option>
+        <option value="ฉัฐญาณ์">ผศ. พญ.ฉัฐญาณ์ วงศ์รัฐนันท์</option>
+        <option value="วิชช์">ผศ. นพ.วิชช์ เกษมทรัพย์</option>
       </select>
     </div>
 
     <div class="filter-group">
       <label for="searchInput">4. ค้นหาคำ/วิชา</label>
-      <input type="text" id="searchInput" placeholder="พิมพ์ชื่อวิชา หรือหัวข้อ...">
+      <input type="text" id="searchInput" placeholder="พิมพ์ชื่อวิชา หัวข้อ หรือชื่ออาจารย์...">
     </div>
   </div>
 
   <div class="summary">
     <span id="resultCount">กำลังโหลดข้อมูลจาก CSV...</span>
+    <span>ระบบค้นหาและกรองข้อมูลทางการศึกษา</span>
   </div>
 
   <div class="timeline" id="scheduleContainer"></div>
 </div>
 
 <script>
-// *** ใส่ URL ลิงก์ CSV จาก Google Sheets (Publish to Web) ของคุณตรงนี้ ***
+// *** URL ไฟล์ CSV จาก Google Sheets (Publish to Web) ***
 const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTVCp6_8XOpTvWsEDQIKVjl-0VNK5gwlXXbIbtrrOlb80CYjon9cTJf5-W-al76r7bLG5gP21NInkz7/pub?gid=1642042382&single=true&output=csv'; 
 
 let allScheduleData = [];
@@ -188,12 +310,13 @@ function renderSchedule() {
   container.innerHTML = "";
   let count = 0;
   let lastWeek = "";
+  let lastDate = "";
 
   allScheduleData.forEach(item => {
     // 1. กรองตามชั้นปี
     const matchYear = !item.year || item.year === selectedYear;
     
-    // 2. กรองตามกลุ่มนักศึกษา (ถ้าเป็น 'all' แสดงทุกอัน / ถ้าเลือกกลุ่ม แสดงเฉพาะ 'all' และ 'เลขกลุ่มตรงกัน')
+    // 2. กรองตามกลุ่มนักศึกษา
     const matchGroup = (selectedGroup === 'all') || (item.groupId === 'all' || item.groupId === selectedGroup);
 
     // 3. กรองตามอาจารย์
@@ -207,16 +330,26 @@ function renderSchedule() {
     if (matchYear && matchGroup && matchLecturer && matchSearch) {
       count++;
 
-      // แบ่งสัปดาห์
+      // 1. เช็คเปลี่ยนสัปดาห์ -> ขึ้นแถบสัปดาห์สีน้ำเงินเข้ม
       if (item.week !== lastWeek) {
         lastWeek = item.week;
+        lastDate = ""; // รีเซ็ตวันเมื่อเปลี่ยนสัปดาห์ใหม่
         const wHeader = document.createElement("div");
         wHeader.className = "week-header";
-        wHeader.textContent = `📌 ${item.week} (${item.date || ''})`;
+        wHeader.textContent = `📌 ${item.week}`;
         container.appendChild(wHeader);
       }
 
-      // สร้างการ์ดแสดงผล
+      // 2. เช็คเปลี่ยนวัน -> ขึ้นแถบวัน (Day Header) แยกแต่ละวัน
+      if (item.date && item.date !== lastDate) {
+        lastDate = item.date;
+        const dHeader = document.createElement("div");
+        dHeader.className = "day-header";
+        dHeader.textContent = item.date;
+        container.appendChild(dHeader);
+      }
+
+      // 3. สร้างการ์ดแสดงกิจกรรม
       const card = document.createElement("div");
       card.className = "card";
       
@@ -225,13 +358,17 @@ function renderSchedule() {
         badgeHtml = `<span class="badge badge-group">[ กลุ่มย่อย ${item.groupId} ]</span>`;
       } else if (item.format === 'Exam') {
         badgeHtml = `<span class="badge badge-exam">[ สอบ ]</span>`;
+      } else if (item.format === 'Online') {
+        badgeHtml = `<span class="badge badge-online">[ Online ]</span>`;
+      } else if (item.format === 'Field') {
+        badgeHtml = `<span class="badge badge-field">[ ออกภาคสนาม ]</span>`;
       }
 
       card.innerHTML = `
         <div class="time-col">⏱️ ${item.time || ''}</div>
-        <div>
-          <h3 style="margin:0 0 4px 0; font-size:1rem;">${item.topic || ''}</h3>
-          <div style="font-size:0.88rem; color:#475569;">ผู้สอน: ${item.lecturer || '-'}</div>
+        <div class="topic-col">
+          <h3>${item.topic || ''}</h3>
+          <div class="lecturer-name">👤 ผู้สอน: ${item.lecturer || '-'}</div>
         </div>
         <div>${badgeHtml}</div>
       `;
@@ -242,92 +379,14 @@ function renderSchedule() {
   document.getElementById('resultCount').textContent = `แสดงผลทั้งสิ้น ${count} รายการ (${selectedYear})`;
 }
 
-// Event Listeners สำหรับการกรอง
+// Event Listeners สำหรับระบบกรอง
 document.getElementById('yearFilter').addEventListener('change', renderSchedule);
 document.getElementById('groupFilter').addEventListener('change', renderSchedule);
 document.getElementById('lecturerFilter').addEventListener('change', renderSchedule);
 document.getElementById('searchInput').addEventListener('input', renderSchedule);
 
-// เริ่มโหลดข้อมูลเมื่อเปิดหน้าเว็บ
+// เริ่มโหลดข้อมูล CSV เมื่อเปิดหน้าเว็บ
 loadCSVData();
-<!-- โครงสร้างไฟล์ HTML ของคุณ -->
-
-<script>
-  // ... รายชื่ออาจารย์ / ข้อมูลตารางเรียน (scheduleData หรือ allScheduleData) ...
-
-  // -------------------------------------------------------------
-  // 📍 วางทับ / แทนที่ฟังก์ชัน renderSchedule() ตรงตำแหน่งนี้
-  // -------------------------------------------------------------
-  function renderSchedule() {
-    const query = searchInput.value.toLowerCase().trim();
-    const selectedLecturer = lecturerSelect.value;
-    const selectedWeek = weekSelect.value;
-    const selectedYear = document.getElementById('yearFilter') ? document.getElementById('yearFilter').value : 'ปี 3';
-    const selectedGroup = document.getElementById('groupFilter') ? document.getElementById('groupFilter').value : 'all';
-
-    container.innerHTML = "";
-    let lastWeek = "";
-    let lastDate = "";
-    let count = 0;
-
-    allScheduleData.forEach(item => {
-      // ตรวจสอบเงื่อนไขการกรองข้อมูล
-      const matchYear = !item.year || item.year === selectedYear;
-      const matchGroup = (selectedGroup === 'all') || (item.groupId === 'all' || item.groupId === selectedGroup);
-      const matchLecturer = !selectedLecturer || (item.lecturer && item.lecturer.includes(selectedLecturer));
-      const matchWeek = !selectedWeek || item.week === selectedWeek;
-      const matchSearch = !query || 
-                          (item.topic && item.topic.toLowerCase().includes(query)) ||
-                          (item.lecturer && item.lecturer.toLowerCase().includes(query));
-
-      if (matchYear && matchGroup && matchLecturer && matchWeek && matchSearch) {
-        count++;
-
-        // 1. เช็คเปลี่ยนสัปดาห์ -> ขึ้นแถบสัปดาห์สีน้ำเงินเข้ม
-        if (item.week !== lastWeek) {
-          lastWeek = item.week;
-          const wHeader = document.createElement("div");
-          wHeader.className = "week-header";
-          wHeader.textContent = `📌 ${item.week}`;
-          container.appendChild(wHeader);
-        }
-
-        // 2. เช็คเปลี่ยนวัน -> ขึ้นแถบหัววัน (Day Header) แยกแต่ละวัน
-        if (item.date !== lastDate) {
-          lastDate = item.date;
-          const dHeader = document.createElement("div");
-          dHeader.className = "day-header";
-          dHeader.textContent = item.date;
-          container.appendChild(dHeader);
-        }
-
-        // 3. สร้างการ์ดแสดงกิจกรรม
-        const card = document.createElement("div");
-        card.className = "card";
-        
-        let badgeHtml = `<span class="badge">[ ${item.format || 'Onsite'} ]</span>`;
-        if (item.groupId && item.groupId !== 'all') {
-          badgeHtml = `<span class="badge badge-group">[ กลุ่มย่อย ${item.groupId} ]</span>`;
-        } else if (item.format === 'Exam') {
-          badgeHtml = `<span class="badge badge-exam">[ สอบ ]</span>`;
-        }
-
-        card.innerHTML = `
-          <div class="time-col">⏱️ ${item.time || ''}</div>
-          <div class="topic-col">
-            <h3>${item.topic || ''}</h3>
-            <div class="lecturer-name">👤 ผู้สอน: ${item.lecturer || '-'}</div>
-          </div>
-          <div>${badgeHtml}</div>
-        `;
-        container.appendChild(card);
-      }
-    });
-
-    if (resultCount) {
-      resultCount.textContent = `แสดงผลทั้งสิ้น ${count} รายการ`;
-    }
-  }
-
-  // ... Event Listeners เช่น searchInput.addEventListener("input", renderSchedule); ...
 </script>
+</body>
+</html>
