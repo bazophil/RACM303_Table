@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ตารางกิจกรรมการเรียนการสอน RACM303</title>
+  <title>ระบบตารางเรียนภาควิชา (Multi-Year & Multi-Group)</title>
   
-  <!-- Google Fonts: Prompt -->
+  <!-- Font Prompt อ่านง่าย กึ่งทางการ -->
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   
   <!-- PapaParse Library สำหรับดึงและแปลงไฟล์ CSV -->
@@ -14,7 +14,6 @@
   <style>
     :root {
       --primary-navy: #1e3a8a;
-      --navy-dark: #0f172a;
       --navy-light: #eff6ff;
       --accent-blue: #0284c7;
       --bg-main: #f8fafc;
@@ -84,17 +83,17 @@
     .week-header {
       background: var(--primary-navy);
       color: #ffffff;
-      font-size: 1.2rem;
-      font-weight: 700;
+      font-size: 1.15rem;
+      font-weight: 600;
       padding: 12px 18px;
       border-radius: 6px;
       margin-top: 24px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.08);
     }
 
-    /* Header แยกวัน (สีฟ้าอ่อน คั่นแต่ละวันชัดเจน) */
+    /* Header แยกวัน (สีฟ้าอ่อน คั่นแยกแต่ละวันชัดเจน) */
     .day-header {
-      font-size: 1.05rem;
+      font-size: 1rem;
       font-weight: 600;
       color: var(--primary-navy);
       background: var(--navy-light);
@@ -103,7 +102,7 @@
       border-right: 1px solid var(--border-color);
       border-bottom: 1px solid var(--border-color);
       padding: 10px 16px;
-      margin-top: 12px;
+      margin-top: 8px;
       border-radius: 4px;
     }
 
@@ -142,7 +141,7 @@
 
 <div class="container">
   <header>
-    <h1>ระบบตารางกิจกรรมการเรียนการสอน </h1>
+    <h1>ระบบตารางกิจกรรมการเรียนการสอน (มัลติชั้นปี & กลุ่มย่อย)</h1>
     <p style="margin:0; opacity:0.9;">ดึงข้อมูลจากไฟล์ CSV อัตโนมัติ — ซิงก์ตรงจาก Google Sheets</p>
   </header>
 
@@ -204,8 +203,8 @@
 </div>
 
 <script>
-// ลิงก์ไฟล์ CSV Publish to web จาก Google Sheets ของคุณ
-const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTVCp6_8XOpTvWsEDQIKVjl-0VNK5gwlXXbIbtrrOlb80CYjon9cTJf5-W-al76r7bLG5gP21NInkz7/pubhtml'; 
+// ลิงก์ CSV เผยแพร่บนเว็บจาก Google Sheets ของคุณ
+const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTVCp6_8XOpTvWsEDQIKVjl-0VNK5gwlXXbIbtrrOlb80CYjon9cTJf5-W-al76r7bLG5gP21NInkz7/pub?output=csv'; 
 
 let allScheduleData = [];
 
@@ -255,17 +254,17 @@ function renderSchedule() {
     if (matchYear && matchGroup && matchLecturer && matchSearch) {
       count++;
 
-      // 📌 1. ตรวจสอบและสร้าง แถบสัปดาห์ (Week Header - แถบสีน้ำเงินเข้ม)
+      // 📌 1. เช็กเปลี่ยนสัปดาห์ -> ขึ้นแถบสัปดาห์สีน้ำเงินเข้ม
       if (item.week !== lastWeek) {
         lastWeek = item.week;
-        lastDate = ""; // รีเซ็ตวันเมื่อขึ้นสัปดาห์ใหม่
+        lastDate = ""; // รีเซ็ตวันเมื่อเปลี่ยนสัปดาห์ใหม่
         const wHeader = document.createElement("div");
         wHeader.className = "week-header";
         wHeader.textContent = `📌 ${item.week}`;
         container.appendChild(wHeader);
       }
 
-      // 📅 2. ตรวจสอบและสร้าง แถบวัน (Day Header - แถบสีฟ้าอ่อน คั่นแยกแต่ละวัน)
+      // 📅 2. เช็กเปลี่ยนวัน -> ขึ้นแถบหัววัน (Day Header) สีฟ้าอ่อน คั่นแยกแต่ละวัน
       if (item.date && item.date !== lastDate) {
         lastDate = item.date;
         const dHeader = document.createElement("div");
@@ -274,7 +273,7 @@ function renderSchedule() {
         container.appendChild(dHeader);
       }
 
-      // 💳 3. สร้างการ์ดแสดงกิจกรรม (Card Item)
+      // 💳 3. สร้างการ์ดแสดงกิจกรรม
       const card = document.createElement("div");
       card.className = "card";
       
@@ -291,7 +290,7 @@ function renderSchedule() {
         <div class="time-col">⏱️ ${item.time || ''}</div>
         <div class="topic-col">
           <h3>${item.topic || ''}</h3>
-          <div class="lecturer-name">👤 ผู้สอน: ${item.lecturer || '-'}</div>
+          <div class="lecturer-name"> ผู้สอน: ${item.lecturer || '-'}</div>
         </div>
         <div>${badgeHtml}</div>
       `;
